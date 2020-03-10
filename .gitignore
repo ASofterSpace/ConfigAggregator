@@ -32,6 +32,7 @@ data
 
 # temporary files
 *.tmp
+temp.xml
 
 # sourcefile list
 src/sourcefiles.list
