@@ -33,6 +33,7 @@ data
 # temporary files
 *.tmp
 temp.xml
+messages.json
 
 # sourcefile list
 src/sourcefiles.list

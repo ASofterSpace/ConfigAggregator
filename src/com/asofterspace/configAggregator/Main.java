@@ -5,9 +5,11 @@
 package com.asofterspace.configAggregator;
 
 import com.asofterspace.toolbox.io.File;
+import com.asofterspace.toolbox.io.JsonFile;
 import com.asofterspace.toolbox.io.SimpleFile;
 import com.asofterspace.toolbox.io.XmlElement;
 import com.asofterspace.toolbox.io.XmlFile;
+import com.asofterspace.toolbox.utils.Record;
 import com.asofterspace.toolbox.Utils;
 
 import java.util.List;
@@ -20,6 +22,7 @@ public class Main {
 	public final static String VERSION_DATE = "10. March 2020";
 
 	public final static String TEMP_FILE = "temp.xml";
+	public final static String RESULT_FILE = "messages.json";
 
 
 	public static void main(String[] args) {
@@ -71,7 +74,25 @@ public class Main {
 		List<XmlElement> dataItems = root.getChildren("egscc_conf:configurationDataItem");
 		System.out.println(dataItems.size() + " messages have been defined in the system...");
 
-		System.out.println("Done!");
+		Record result = Record.emptyArray();
+		for (XmlElement dataItem : dataItems) {
+			Record resobj = Record.emptyObject();
+			List<XmlElement> entries = dataItem.getChild("egscc_conf:value").getChild("egscc_conf:fields").getChildren("egscc_conf:entry");
+			for (XmlElement entry : entries) {
+				if ("messageText".equals(entry.getChild("egscc_conf:key").getInnerText())) {
+					resobj.set("text", entry.getChild("egscc_conf:value").getAttribute("value"));
+				}
+			}
+			resobj.set("uuid", dataItem.getChild("egscc_conf:dataItemIdentifier").getAttribute("name"));
+			// TODO resobj.set("component", );
+			result.append(resobj);
+		}
+
+		JsonFile resultFile = new JsonFile(RESULT_FILE);
+		resultFile.setAllContents(result);
+		resultFile.save();
+
+		System.out.println("The aggregated result has been saved to " + RESULT_FILE + " - have a fun day! :)");
 	}
 
 }
