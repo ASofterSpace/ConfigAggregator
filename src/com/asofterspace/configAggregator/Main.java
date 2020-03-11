@@ -84,10 +84,14 @@ public class Main {
 		List<File> codeFiles = checkoutDir.getAllFilesEndingWith(".java", true);
 		List<TextFile> codeFilesContainingUuids = new ArrayList<>();
 		for (File codeFile : codeFiles) {
+			// ignore tests and doubles
+			String absName = codeFile.getAbsoluteFilename();
+			if (absName.contains("/itest/") || absName.contains("/vtest/") || absName.contains("/test/") || absName.contains("/doubles/")) {
+				continue;
+			}
 			TextFile codeFileMaybeContainingUuids = new TextFile(codeFile);
 			if (codeFileMaybeContainingUuids.getContent().contains("import java.util.UUID;")) {
 				codeFilesContainingUuids.add(codeFileMaybeContainingUuids);
-				// System.out.println(codeFileMaybeContainingUuids);
 			}
 		}
 		System.out.println(codeFilesContainingUuids.size() + " code files containing UUIDs belong to the system...");
@@ -103,11 +107,11 @@ public class Main {
 			}
 
 			XmlElement dataItemUuid = dataItem.getChild("egscc_conf:dataItemIdentifier");
-			if (dataItemUuid == null) {
-				resobj.set("uuid", null);
-			} else {
-				resobj.set("uuid", dataItemUuid.getAttribute("name"));
+			String uuid = null;
+			if (dataItemUuid != null) {
+				uuid = dataItemUuid.getAttribute("name");
 			}
+			resobj.set("uuid", uuid);
 
 			XmlElement dataItemName = dataItem.getChild("egscc_conf:dataItemName");
 			if (dataItemName == null) {
@@ -116,7 +120,29 @@ public class Main {
 				resobj.set("name", dataItemName.getAttribute("name"));
 			}
 
-			// TODO resobj.set("component", );
+			List<String> components = new ArrayList<>();
+			List<String> sources = new ArrayList<>();
+			if (uuid != null) {
+				for (TextFile codeFile : codeFilesContainingUuids) {
+					if (codeFile.getContent().contains(uuid)) {
+						String source = checkoutDir.getRelativePath(codeFile);
+						sources.add(source);
+						String component = source.substring(0, source.indexOf("/"));
+						if (!components.contains(component)) {
+							components.add(component);
+						}
+					}
+				}
+			}
+			if (sources.size() < 0) {
+				System.out.println(uuid + " is not contained in any sources!");
+			}
+			if (sources.size() > 1) {
+				System.out.println(uuid + " is contained in " + sources.size() + " sources!");
+			}
+			resobj.set("components", components);
+			resobj.set("sources", sources);
+
 			result.append(resobj);
 		}
 
