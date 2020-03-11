@@ -29,13 +29,13 @@ Or under Linux:
 To start up the ConfigAggregator after it has been built, you can call under Windows:
 
 ```
-run.bat
+run.bat path\to\checked\out\sources
 ```
 
 Or under Linux:
 
 ```
-run.sh
+run.sh path/to/checked/out/sources
 ```
 
 ## License

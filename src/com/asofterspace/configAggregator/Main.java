@@ -83,18 +83,22 @@ public class Main {
 		Directory checkoutDir = new Directory(checkoutLocation);
 		List<File> codeFiles = checkoutDir.getAllFilesEndingWith(".java", true);
 		List<TextFile> codeFilesContainingUuids = new ArrayList<>();
+		List<TextFile> testsAndDoublesContainingUuids = new ArrayList<>();
 		for (File codeFile : codeFiles) {
-			// ignore tests and doubles
-			String absName = codeFile.getAbsoluteFilename();
-			if (absName.contains("/itest/") || absName.contains("/vtest/") || absName.contains("/test/") || absName.contains("/doubles/")) {
-				continue;
-			}
 			TextFile codeFileMaybeContainingUuids = new TextFile(codeFile);
 			if (codeFileMaybeContainingUuids.getContent().contains("import java.util.UUID;")) {
-				codeFilesContainingUuids.add(codeFileMaybeContainingUuids);
+				// ignore tests and doubles for now, but store them for later...
+				String absName = codeFile.getAbsoluteFilename();
+				if (absName.contains("/itest/") || absName.contains("/vtest/") ||
+					absName.contains("/test/") || absName.contains("/doubles/")) {
+					testsAndDoublesContainingUuids.add(codeFileMaybeContainingUuids);
+				} else {
+					codeFilesContainingUuids.add(codeFileMaybeContainingUuids);
+				}
 			}
 		}
-		System.out.println(codeFilesContainingUuids.size() + " code files containing UUIDs belong to the system...");
+		System.out.println(codeFilesContainingUuids.size() + " code files and " + testsAndDoublesContainingUuids.size() +
+			" tests and doubles containing some UUIDs belong to the system...");
 
 		Record result = Record.emptyArray();
 		for (XmlElement dataItem : dataItems) {
@@ -133,12 +137,29 @@ public class Main {
 						}
 					}
 				}
-			}
-			if (sources.size() < 0) {
-				System.out.println(uuid + " is not contained in any sources!");
-			}
-			if (sources.size() > 1) {
-				System.out.println(uuid + " is contained in " + sources.size() + " sources!");
+				boolean noneBeforeTestsAndDoubles = sources.size() < 1;
+				for (TextFile codeFile : testsAndDoublesContainingUuids) {
+					if (codeFile.getContent().contains(uuid)) {
+						String source = checkoutDir.getRelativePath(codeFile);
+						sources.add(source);
+						String component = source.substring(0, source.indexOf("/"));
+						if (!components.contains(component)) {
+							components.add(component);
+						}
+					}
+				}
+				if (sources.size() < 1) {
+					System.out.println(uuid + " is not contained in any sources!");
+				} else {
+					if (noneBeforeTestsAndDoubles) {
+						System.out.println(uuid + " is only contained in tests and / or doubles!");
+					}
+				}
+				if (sources.size() > 1) {
+					System.out.println(uuid + " is contained in " + sources.size() + " sources!");
+				}
+			} else {
+				System.out.println("Encounted a message without UUID!");
 			}
 			resobj.set("components", components);
 			resobj.set("sources", sources);
