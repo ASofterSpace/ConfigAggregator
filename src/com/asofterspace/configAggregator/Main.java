@@ -4,14 +4,17 @@
  */
 package com.asofterspace.configAggregator;
 
+import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.io.JsonFile;
 import com.asofterspace.toolbox.io.SimpleFile;
+import com.asofterspace.toolbox.io.TextFile;
 import com.asofterspace.toolbox.io.XmlElement;
 import com.asofterspace.toolbox.io.XmlFile;
 import com.asofterspace.toolbox.utils.Record;
 import com.asofterspace.toolbox.Utils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -76,6 +79,18 @@ public class Main {
 		XmlElement root = xmlMessageTemplates.getRoot();
 		List<XmlElement> dataItems = root.getChildren("egscc_conf:configurationDataItem");
 		System.out.println(dataItems.size() + " messages have been defined in the system...");
+
+		Directory checkoutDir = new Directory(checkoutLocation);
+		List<File> codeFiles = checkoutDir.getAllFilesEndingWith(".java", true);
+		List<TextFile> codeFilesContainingUuids = new ArrayList<>();
+		for (File codeFile : codeFiles) {
+			TextFile codeFileMaybeContainingUuids = new TextFile(codeFile);
+			if (codeFileMaybeContainingUuids.getContent().contains("import java.util.UUID;")) {
+				codeFilesContainingUuids.add(codeFileMaybeContainingUuids);
+				// System.out.println(codeFileMaybeContainingUuids);
+			}
+		}
+		System.out.println(codeFilesContainingUuids.size() + " code files containing UUIDs belong to the system...");
 
 		Record result = Record.emptyArray();
 		for (XmlElement dataItem : dataItems) {
