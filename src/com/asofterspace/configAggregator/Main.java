@@ -77,7 +77,42 @@ public class Main {
 
 		XmlFile xmlMessageTemplates = new XmlFile(TEMP_FILE);
 		XmlElement root = xmlMessageTemplates.getRoot();
-		List<XmlElement> dataItems = root.getChildren("egscc_conf:configurationDataItem");
+		List<XmlElement> possibleDataItems = root.getChildren("egscc_conf:configurationDataItem");
+		List<XmlElement> dataItems = new ArrayList<>();
+
+		for (XmlElement possibleDataItem : possibleDataItems) {
+			// how confident are we that we are looking at a message template?
+			int confidence = 0;
+
+			try {
+				List<XmlElement> entries = possibleDataItem.getChild("egscc_conf:value").getChild("egscc_conf:fields").getChildren("egscc_conf:entry");
+				for (XmlElement entry : entries) {
+					String key = entry.getChild("egscc_conf:key").getInnerText();
+					if ("severity".equals(key)) {
+						confidence++;
+					}
+					if ("messageText".equals(key)) {
+						confidence++;
+					}
+					if ("categoryIds".equals(key)) {
+						confidence++;
+					}
+					if ("type".equals(key)) {
+						confidence++;
+					}
+					if ("requiresAcknowledgement".equals(key)) {
+						confidence++;
+					}
+				}
+			} catch (NullPointerException e) {
+				// whoops!
+			}
+
+			if (confidence > 4) {
+				dataItems.add(possibleDataItem);
+			}
+		}
+
 		System.out.println(dataItems.size() + " messages have been defined in the system...");
 
 		Directory checkoutDir = new Directory(checkoutLocation);
@@ -105,7 +140,8 @@ public class Main {
 			Record resobj = Record.emptyObject();
 			List<XmlElement> entries = dataItem.getChild("egscc_conf:value").getChild("egscc_conf:fields").getChildren("egscc_conf:entry");
 			for (XmlElement entry : entries) {
-				if ("messageText".equals(entry.getChild("egscc_conf:key").getInnerText())) {
+				String key = entry.getChild("egscc_conf:key").getInnerText();
+				if ("messageText".equals(key)) {
 					resobj.set("text", entry.getChild("egscc_conf:value").getAttribute("value"));
 				}
 			}
