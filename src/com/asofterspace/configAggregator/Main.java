@@ -83,8 +83,21 @@ public class Main {
 					resobj.set("text", entry.getChild("egscc_conf:value").getAttribute("value"));
 				}
 			}
-			resobj.set("uuid", dataItem.getChild("egscc_conf:dataItemIdentifier").getAttribute("name"));
-			resobj.set("name", dataItem.getChild("egscc_conf:dataItemName").getAttribute("name"));
+
+			XmlElement dataItemUuid = dataItem.getChild("egscc_conf:dataItemIdentifier");
+			if (dataItemUuid == null) {
+				resobj.set("uuid", null);
+			} else {
+				resobj.set("uuid", dataItemUuid.getAttribute("name"));
+			}
+
+			XmlElement dataItemName = dataItem.getChild("egscc_conf:dataItemName");
+			if (dataItemName == null) {
+				resobj.set("name", null);
+			} else {
+				resobj.set("name", dataItemName.getAttribute("name"));
+			}
+
 			// TODO resobj.set("component", );
 			result.append(resobj);
 		}
