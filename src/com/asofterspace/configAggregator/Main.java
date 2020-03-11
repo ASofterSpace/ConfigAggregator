@@ -18,8 +18,8 @@ import java.util.List;
 public class Main {
 
 	public final static String PROGRAM_TITLE = "ConfigAggregator";
-	public final static String VERSION_NUMBER = "0.0.0.1(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
-	public final static String VERSION_DATE = "10. March 2020";
+	public final static String VERSION_NUMBER = "0.0.0.2(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
+	public final static String VERSION_DATE = "10. March 2020 - 11. March 2020";
 
 	public final static String TEMP_FILE = "temp.xml";
 	public final static String RESULT_FILE = "messages.json";
@@ -84,6 +84,7 @@ public class Main {
 				}
 			}
 			resobj.set("uuid", dataItem.getChild("egscc_conf:dataItemIdentifier").getAttribute("name"));
+			resobj.set("name", dataItem.getChild("egscc_conf:dataItemName").getAttribute("name"));
 			// TODO resobj.set("component", );
 			result.append(resobj);
 		}
