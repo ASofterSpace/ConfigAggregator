@@ -50,6 +50,9 @@ public class Main {
 
 		String checkoutLocation = args[0];
 
+		System.out.println(Utils.getFullProgramIdentifierWithDate());
+		System.out.println("");
+
 		System.out.println("Loading the configuration from " + checkoutLocation + "...");
 
 		checkoutLocation += "/";
