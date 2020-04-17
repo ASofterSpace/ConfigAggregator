@@ -10,12 +10,6 @@ rd /s /q toolbox
 md toolbox
 cd toolbox
 
-md coders
-md codeeditor
-cd codeeditor
-md base
-md utils
-cd ..
 md configuration
 md io
 md utils
@@ -23,10 +17,6 @@ md utils
 cd ..\..\..\..
 
 copy "..\Toolbox-Java\src\com\asofterspace\toolbox\*.java" "src\com\asofterspace\toolbox"
-copy "..\Toolbox-Java\src\com\asofterspace\toolbox\coders\*.*" "src\com\asofterspace\toolbox\coders"
-copy "..\Toolbox-Java\src\com\asofterspace\toolbox\codeeditor\*.*" "src\com\asofterspace\toolbox\codeeditor"
-copy "..\Toolbox-Java\src\com\asofterspace\toolbox\codeeditor\base\*.*" "src\com\asofterspace\toolbox\codeeditor\base"
-copy "..\Toolbox-Java\src\com\asofterspace\toolbox\codeeditor\utils\*.*" "src\com\asofterspace\toolbox\codeeditor\utils"
 copy "..\Toolbox-Java\src\com\asofterspace\toolbox\configuration\*.*" "src\com\asofterspace\toolbox\configuration"
 copy "..\Toolbox-Java\src\com\asofterspace\toolbox\io\*.*" "src\com\asofterspace\toolbox\io"
 copy "..\Toolbox-Java\src\com\asofterspace\toolbox\utils\*.*" "src\com\asofterspace\toolbox\utils"
