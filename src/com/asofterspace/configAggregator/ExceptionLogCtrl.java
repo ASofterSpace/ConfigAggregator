@@ -69,9 +69,23 @@ public class ExceptionLogCtrl {
 			content.replace('\r', ' ');
 			content.replace('\n', ' ');
 
-			while (content.contains(" catch ")) {
+			while (content.contains(" catch ") || content.contains(" catch(") ||
+				   content.contains("}catch ") || content.contains("}catch(")) {
 				totalCatchBlocks++;
-				content = content.substring(content.indexOf(" catch ") + 1);
+				int nextPos = Integer.MAX_VALUE;
+				if (content.indexOf(" catch ") > -1) {
+					nextPos = Math.min(nextPos, content.indexOf(" catch "));
+				}
+				if (content.indexOf(" catch(") > -1) {
+					nextPos = Math.min(nextPos, content.indexOf(" catch("));
+				}
+				if (content.indexOf("}catch ") > -1) {
+					nextPos = Math.min(nextPos, content.indexOf("}catch "));
+				}
+				if (content.indexOf("}catch(") > -1) {
+					nextPos = Math.min(nextPos, content.indexOf("}catch("));
+				}
+				content = content.substring(nextPos + 1);
 
 				// get the exceptionIdentifier
 				String exceptionIdentifier = content.substring(content.indexOf("(") + 1);
@@ -107,6 +121,8 @@ public class ExceptionLogCtrl {
 				while (codeInCatch.contains(exceptionIdentifier + ".toString()")) {
 					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.toString()", "");
 				}
+				codeInCatch = codeInCatch.replace('{', ' ');
+				codeInCatch = codeInCatch.replace('}', ' ');
 				codeInCatch = codeInCatch.replace('(', ' ');
 				codeInCatch = codeInCatch.replace(')', ' ');
 				codeInCatch = codeInCatch.replace('<', ' ');
@@ -114,6 +130,7 @@ public class ExceptionLogCtrl {
 				codeInCatch = codeInCatch.replace('[', ' ');
 				codeInCatch = codeInCatch.replace(']', ' ');
 				codeInCatch = codeInCatch.replace(';', ' ');
+				codeInCatch = codeInCatch.replace(',', ' ');
 				codeInCatch = codeInCatch.replace('@', ' ');
 				// we do not replace dots, as bla(ex) means that ex is used, but bla.ex means that the
 				// variable ex is NOT actually used!
