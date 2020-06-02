@@ -31,6 +31,11 @@ public class Main {
 				System.out.println("version " + Utils.getVersionNumber());
 				return;
 			}
+			if ("--help".equals(arg) || "-help".equals(arg)) {
+				System.out.println("Call the " + PROGRAM_TITLE + " with the location of the checked out source codes as first argument, " +
+					"optionally followed by one or several configuration files that contain (among other things) message templates.");
+				return;
+			}
 		}
 
 		System.out.println(Utils.getFullProgramIdentifierWithDate());
@@ -45,7 +50,7 @@ public class Main {
 		Directory checkoutDir = new Directory(checkoutLocation);
 
 		ConfigAggCtrl configAggCtrl = new ConfigAggCtrl(checkoutDir);
-		configAggCtrl.aggregateConfiguration();
+		configAggCtrl.aggregateConfiguration(args);
 
 		ExceptionLogCtrl exceptionLogCtrl = new ExceptionLogCtrl(checkoutDir);
 		exceptionLogCtrl.findUnloggedExceptionTraces();

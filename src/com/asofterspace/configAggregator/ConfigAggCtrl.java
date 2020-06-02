@@ -29,7 +29,7 @@ public class ConfigAggCtrl {
 		this.checkoutDir = checkoutDir;
 	}
 
-	public void aggregateConfiguration() {
+	public void aggregateConfiguration(String[] args) {
 
 		System.out.println("Loading the EGS-CC configuration from " + checkoutDir.getAbsoluteDirname() + "...");
 
@@ -44,46 +44,18 @@ public class ConfigAggCtrl {
 
 		SimpleFile simpleMessageTemplates = new SimpleFile(TEMP_FILE);
 
-		simpleMessageTemplates.insertContent("<root>", 0);
-		simpleMessageTemplates.appendContent("</root>");
+		simpleMessageTemplates.insertContent("<egscc_conf:SystemConfigurationExchange>", 0);
+		simpleMessageTemplates.insertContent("<egscc_conf:configurationDataContainer>", 1);
+		simpleMessageTemplates.appendContent("</egscc_conf:configurationDataContainer>");
+		simpleMessageTemplates.appendContent("</egscc_conf:SystemConfigurationExchange>");
 		simpleMessageTemplates.save();
 
-		XmlFile xmlMessageTemplates = new XmlFile(TEMP_FILE);
-		XmlElement root = xmlMessageTemplates.getRoot();
-		List<XmlElement> possibleDataItems = root.getChildren("egscc_conf:configurationDataItem");
 		List<XmlElement> dataItems = new ArrayList<>();
 
-		for (XmlElement possibleDataItem : possibleDataItems) {
-			// how confident are we that we are looking at a message template?
-			int confidence = 0;
+		appendDataItemsFromConfigFile(dataItems, TEMP_FILE);
 
-			try {
-				List<XmlElement> entries = possibleDataItem.getChild("egscc_conf:value").getChild("egscc_conf:fields").getChildren("egscc_conf:entry");
-				for (XmlElement entry : entries) {
-					String key = entry.getChild("egscc_conf:key").getInnerText();
-					if ("severity".equals(key)) {
-						confidence++;
-					}
-					if ("messageText".equals(key)) {
-						confidence++;
-					}
-					if ("categoryIds".equals(key)) {
-						confidence++;
-					}
-					if ("type".equals(key)) {
-						confidence++;
-					}
-					if ("requiresAcknowledgement".equals(key)) {
-						confidence++;
-					}
-				}
-			} catch (NullPointerException e) {
-				// whoops!
-			}
-
-			if (confidence > 4) {
-				dataItems.add(possibleDataItem);
-			}
+		for (int i = 1; i < args.length; i++) {
+			appendDataItemsFromConfigFile(dataItems, args[i]);
 		}
 
 		System.out.println(dataItems.size() + " messages have been defined in the system...");
@@ -181,6 +153,75 @@ public class ConfigAggCtrl {
 		resultFile.save();
 
 		System.out.println("The aggregated result has been saved to " + RESULT_FILE);
+	}
+
+	private static void appendDataItemsFromConfigFile(List<XmlElement> dataItems, String filename) {
+
+		// ensure that we are loading each message only once, even if it is defined in several files
+		List<String> uuidsBefore = new ArrayList<>();
+		for (XmlElement dataItem : dataItems) {
+			XmlElement dataItemUuid = dataItem.getChild("egscc_conf:dataItemIdentifier");
+			if (dataItemUuid != null) {
+				String uuid = dataItemUuid.getAttribute("name");
+				if (uuid != null) {
+					uuidsBefore.add(uuid);
+				}
+			}
+		}
+
+		XmlFile xmlMessageTemplates = new XmlFile(filename);
+
+		if (!xmlMessageTemplates.exists()) {
+			System.err.println("The file " + xmlMessageTemplates.getFilename() + " does not seem to exist!");
+			return;
+		}
+
+		XmlElement root = xmlMessageTemplates.getRoot().getChild("egscc_conf:configurationDataContainer");
+		List<XmlElement> possibleDataItems = root.getChildren("egscc_conf:configurationDataItem");
+
+		for (XmlElement possibleDataItem : possibleDataItems) {
+			// how confident are we that we are looking at a message template?
+			int confidence = 0;
+
+			try {
+				List<XmlElement> entries = possibleDataItem.getChild("egscc_conf:value").getChild("egscc_conf:fields").getChildren("egscc_conf:entry");
+				for (XmlElement entry : entries) {
+					String key = entry.getChild("egscc_conf:key").getInnerText();
+					if ("severity".equals(key)) {
+						confidence++;
+					}
+					if ("messageText".equals(key)) {
+						confidence++;
+					}
+					if ("categoryIds".equals(key)) {
+						confidence++;
+					}
+					if ("type".equals(key)) {
+						confidence++;
+					}
+					if ("requiresAcknowledgement".equals(key)) {
+						confidence++;
+					}
+				}
+			} catch (NullPointerException e) {
+				// whoops!
+			}
+
+			XmlElement dataItemUuid = possibleDataItem.getChild("egscc_conf:dataItemIdentifier");
+			if (dataItemUuid != null) {
+				String uuid = dataItemUuid.getAttribute("name");
+				if (uuid != null) {
+					if (uuidsBefore.contains(uuid)) {
+						// do not load messages which we already have a second time
+						continue;
+					}
+				}
+			}
+
+			if (confidence > 4) {
+				dataItems.add(possibleDataItem);
+			}
+		}
 	}
 
 }
