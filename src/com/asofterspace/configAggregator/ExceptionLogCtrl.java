@@ -71,7 +71,7 @@ public class ExceptionLogCtrl {
 
 			while (content.contains(" catch ") || content.contains(" catch(") ||
 				   content.contains("}catch ") || content.contains("}catch(")) {
-				totalCatchBlocks++;
+				curCatchBlocks++;
 				int nextPos = Integer.MAX_VALUE;
 				if (content.indexOf(" catch ") > -1) {
 					nextPos = Math.min(nextPos, content.indexOf(" catch "));
