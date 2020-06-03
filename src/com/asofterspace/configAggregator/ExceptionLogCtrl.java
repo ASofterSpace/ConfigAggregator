@@ -136,8 +136,6 @@ public class ExceptionLogCtrl {
 				// variable ex is NOT actually used!
 
 				if (!codeInCatch.contains(" " + exceptionIdentifier + " ")) {
-					exIdentMissingOutput.append(curFile.getAbsoluteFilename());
-					exIdentMissingOutput.append("\n");
 					curExIdentMissing++;
 					curProblems++;
 					continue;
@@ -150,6 +148,11 @@ public class ExceptionLogCtrl {
 				// logged...)
 
 				// TODO
+			}
+
+			if (curProblems > 0) {
+				exIdentMissingOutput.append(curFile.getAbsoluteFilename() + " - " + curProblems + " exceptions missing from catch blocks");
+				exIdentMissingOutput.append("\n");
 			}
 
 			totalCatchBlocks += curCatchBlocks;
