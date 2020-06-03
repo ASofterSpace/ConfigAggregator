@@ -46,7 +46,9 @@ public class ExceptionLogCtrl {
 		JavaCode javaCodeHighlighter = new JavaCode(null);
 
 		int totalCatchBlocks = 0;
+		int totalExDot = 0;
 		int totalProblems = 0;
+		int totalExToString = 0;
 		int totalExIdentMissing = 0;
 		StringBuilder exIdentMissingOutput = new StringBuilder();
 
@@ -61,6 +63,8 @@ public class ExceptionLogCtrl {
 			int curCatchBlocks = 0;
 			int curProblems = 0;
 			int curExIdentMissing = 0;
+			int curExToString = 0;
+			int curExDot = 0;
 
 			// ... actually properly analyse it, by first transforming it into a basic representation...
 			String content = curFile.getContent();
@@ -118,7 +122,9 @@ public class ExceptionLogCtrl {
 				while (codeInCatch.contains(" ")) {
 					codeInCatch = codeInCatch.replaceAll(" ", "");
 				}
+				boolean exToStringFound = false;
 				while (codeInCatch.contains(exceptionIdentifier + ".toString()")) {
+					exToStringFound = true;
 					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.toString()", "");
 				}
 				codeInCatch = codeInCatch.replace('{', ' ');
@@ -132,11 +138,24 @@ public class ExceptionLogCtrl {
 				codeInCatch = codeInCatch.replace(';', ' ');
 				codeInCatch = codeInCatch.replace(',', ' ');
 				codeInCatch = codeInCatch.replace('@', ' ');
-				// we do not replace dots, as bla(ex) means that ex is used, but bla.ex means that the
+				// we do not replace all dots, as bla(ex) means that ex is used, but bla.ex means that the
 				// variable ex is NOT actually used!
 
+				boolean exDotFound = false;
+				while (codeInCatch.contains(exceptionIdentifier + ".")) {
+					exDotFound = true;
+					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.", exceptionIdentifier + " ");
+				}
+				if (exDotFound) {
+					curExDot++;
+				}
+
 				if (!codeInCatch.contains(" " + exceptionIdentifier + " ")) {
-					curExIdentMissing++;
+					if (exToStringFound) {
+						curExToString++;
+					} else {
+						curExIdentMissing++;
+					}
 					curProblems++;
 					continue;
 				}
@@ -156,23 +175,29 @@ public class ExceptionLogCtrl {
 			}
 
 			totalCatchBlocks += curCatchBlocks;
+			totalExDot += curExDot;
 			totalProblems += curProblems;
 			totalExIdentMissing += curExIdentMissing;
+			totalExToString += curExToString;
 
 			// output what we found for this one file
 			System.out.println("");
 			System.out.println("In the code file " + curFile.getAbsoluteFilename() + " we found:");
 			System.out.println(curCatchBlocks + " catch blocks");
+			System.out.println(curExDot + " times the exception identifier was used with a . behind it (not a problem!)");
 			System.out.println(curProblems + " problems in catch blocks");
-			System.out.println(curExIdentMissing + " times the exception identifier was unused except for .toString()");
+			System.out.println(curExIdentMissing + " times the exception identifier was unused");
+			System.out.println(curExToString + " times the exception identifier was unused except for .toString()");
 		}
 
 		// output what we found in total
 		System.out.println("");
 		System.out.println("In total we found:");
 		System.out.println(totalCatchBlocks + " catch blocks");
+		System.out.println(totalExDot + " times the exception identifier was used with a . behind it (not a problem!)");
 		System.out.println(totalProblems + " problems in catch blocks");
-		System.out.println(totalExIdentMissing + " times the exception identifier was unused except for .toString()");
+		System.out.println(totalExIdentMissing + " times the exception identifier was unused");
+		System.out.println(totalExToString + " times the exception identifier was unused except for .toString()");
 
 		System.out.println("");
 		TextFile resultFile = new TextFile(RESULT_FILE);
