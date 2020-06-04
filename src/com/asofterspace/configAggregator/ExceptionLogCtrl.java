@@ -8,6 +8,7 @@ import com.asofterspace.toolbox.codeeditor.JavaCode;
 import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.io.TextFile;
+import com.asofterspace.toolbox.utils.StrUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,12 +76,9 @@ public class ExceptionLogCtrl {
 			content.replace('\r', ' ');
 			content.replace('\n', ' ');
 
-			System.out.println("DEBUG file: " + curFile.getAbsoluteFilename());
-
 			while (content.contains(" catch ") || content.contains(" catch(") ||
 				   content.contains("}catch ") || content.contains("}catch(")) {
 				curCatchBlocks++;
-			System.out.println("DEBUG catch block: " + curCatchBlocks);
 
 				int nextPos = Integer.MAX_VALUE;
 				if (content.indexOf(" catch ") > -1) {
@@ -106,8 +104,6 @@ public class ExceptionLogCtrl {
 				}
 				// in case of catch (Foo bar), exceptionIdentifier is now bar
 
-				System.out.println("DEBUG exceptionIdentifier: |" + exceptionIdentifier + "|");
-
 				// get the code contained in the catch block
 				int depth = 0;
 				int i = 0;
@@ -125,36 +121,30 @@ public class ExceptionLogCtrl {
 					}
 				}
 
-				System.out.println("DEBUG codeInCatch: |" + codeInCatch + "|");
-
 				// check if the exceptionIdentifier is present in the code inside the catch at all -
 				// but .toString() does not count!
-				while (codeInCatch.contains(" .")) {
-					codeInCatch = codeInCatch.replaceAll(" \\.", ".");
-				}
+				codeInCatch = StrUtils.replaceAllRepeatedly(codeInCatch, " .", ".");
 
 				// e.getCause() basically counts as e - that is, just the exception itself
-				while (codeInCatch.contains(exceptionIdentifier + ".getCause()")) {
-					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.getCause()", exceptionIdentifier);
-				}
+				codeInCatch = StrUtils.replaceAllRepeatedly(codeInCatch, exceptionIdentifier + ".getCause()", exceptionIdentifier);
 
 				boolean exToStringFound = false;
 				boolean exPrintStackTraceFound = false;
-				while (codeInCatch.contains(exceptionIdentifier + ".toString()")) {
+				if (codeInCatch.contains(exceptionIdentifier + ".toString()")) {
 					exToStringFound = true;
-					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.toString()", "");
+					codeInCatch = StrUtils.replaceAllRepeatedly(codeInCatch, exceptionIdentifier + ".toString()", "");
 				}
-				while (codeInCatch.contains(exceptionIdentifier + ".printStackTrace()")) {
+				if (codeInCatch.contains(exceptionIdentifier + ".printStackTrace()")) {
 					exPrintStackTraceFound = true;
-					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.printStackTrace()", "");
+					codeInCatch = StrUtils.replaceAllRepeatedly(codeInCatch, exceptionIdentifier + ".printStackTrace()", "");
 				}
-				while (codeInCatch.contains(exceptionIdentifier + ".getMessage()")) {
+				if (codeInCatch.contains(exceptionIdentifier + ".getMessage()")) {
 					exToStringFound = true;
-					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.getMessage()", "");
+					codeInCatch = StrUtils.replaceAllRepeatedly(codeInCatch, exceptionIdentifier + ".getMessage()", "");
 				}
-				while (codeInCatch.contains(exceptionIdentifier + ".getLocalizedMessage()")) {
+				if (codeInCatch.contains(exceptionIdentifier + ".getLocalizedMessage()")) {
 					exToStringFound = true;
-					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.getLocalizedMessage()", "");
+					codeInCatch = StrUtils.replaceAllRepeatedly(codeInCatch, exceptionIdentifier + ".getLocalizedMessage()", "");
 				}
 				codeInCatch = codeInCatch.replace('{', ' ');
 				codeInCatch = codeInCatch.replace('}', ' ');
@@ -171,13 +161,15 @@ public class ExceptionLogCtrl {
 				// we do not replace all dots, as bla(ex) means that ex is used, but bla.ex means that the
 				// variable ex is NOT actually used!
 
+				/*
 				System.out.println("exceptionIdentifier: |" + exceptionIdentifier + "|");
 				System.out.println("codeInCatch: |" + codeInCatch + "|");
+				*/
 
 				boolean exDotFound = false;
-				while (codeInCatch.contains(" " + exceptionIdentifier + ".")) {
+				if (codeInCatch.contains(" " + exceptionIdentifier + ".")) {
 					exDotFound = true;
-					codeInCatch = codeInCatch.replaceAll(" " + exceptionIdentifier + "\\.", " " + exceptionIdentifier + " ");
+					codeInCatch = StrUtils.replaceAllRepeatedly(codeInCatch, " " + exceptionIdentifier + ".", " " + exceptionIdentifier + " ");
 				}
 				if (exDotFound) {
 					curExDot++;
