@@ -106,6 +106,8 @@ public class ExceptionLogCtrl {
 				}
 				// in case of catch (Foo bar), exceptionIdentifier is now bar
 
+				System.out.println("DEBUG exceptionIdentifier: |" + exceptionIdentifier + "|");
+
 				// get the code contained in the catch block
 				int depth = 0;
 				int i = 0;
@@ -122,6 +124,8 @@ public class ExceptionLogCtrl {
 						}
 					}
 				}
+
+				System.out.println("DEBUG codeInCatch: |" + codeInCatch + "|");
 
 				// check if the exceptionIdentifier is present in the code inside the catch at all -
 				// but .toString() does not count!
@@ -167,10 +171,8 @@ public class ExceptionLogCtrl {
 				// we do not replace all dots, as bla(ex) means that ex is used, but bla.ex means that the
 				// variable ex is NOT actually used!
 
-				/*
 				System.out.println("exceptionIdentifier: |" + exceptionIdentifier + "|");
 				System.out.println("codeInCatch: |" + codeInCatch + "|");
-				*/
 
 				boolean exDotFound = false;
 				while (codeInCatch.contains(" " + exceptionIdentifier + ".")) {
