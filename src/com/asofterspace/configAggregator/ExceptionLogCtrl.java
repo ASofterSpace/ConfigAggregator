@@ -163,8 +163,10 @@ public class ExceptionLogCtrl {
 				// we do not replace all dots, as bla(ex) means that ex is used, but bla.ex means that the
 				// variable ex is NOT actually used!
 
+				/*
 				System.out.println("exceptionIdentifier: |" + exceptionIdentifier + "|");
 				System.out.println("codeInCatch: |" + codeInCatch + "|");
+				*/
 
 				boolean exDotFound = false;
 				while (codeInCatch.contains(" " + exceptionIdentifier + ".")) {
