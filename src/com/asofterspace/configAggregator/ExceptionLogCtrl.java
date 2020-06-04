@@ -49,6 +49,7 @@ public class ExceptionLogCtrl {
 		int totalExDot = 0;
 		int totalProblems = 0;
 		int totalExToString = 0;
+		int totalExPrintStackTrace = 0;
 		int totalExIdentMissing = 0;
 		StringBuilder exIdentMissingOutput = new StringBuilder();
 
@@ -64,6 +65,7 @@ public class ExceptionLogCtrl {
 			int curProblems = 0;
 			int curExIdentMissing = 0;
 			int curExToString = 0;
+			int curExPrintStackTrace = 0;
 			int curExDot = 0;
 
 			// ... actually properly analyse it, by first transforming it into a basic representation...
@@ -123,9 +125,22 @@ public class ExceptionLogCtrl {
 					codeInCatch = codeInCatch.replaceAll(" ", "");
 				}
 				boolean exToStringFound = false;
+				boolean exPrintStackTraceFound = false;
 				while (codeInCatch.contains(exceptionIdentifier + ".toString()")) {
 					exToStringFound = true;
 					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.toString()", "");
+				}
+				while (codeInCatch.contains(exceptionIdentifier + ".printStackTrace()")) {
+					exPrintStackTraceFound = true;
+					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.printStackTrace()", "");
+				}
+				while (codeInCatch.contains(exceptionIdentifier + ".getMessage()")) {
+					exToStringFound = true;
+					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.getMessage()", "");
+				}
+				while (codeInCatch.contains(exceptionIdentifier + ".getLocalizedMessage()")) {
+					exToStringFound = true;
+					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.getLocalizedMessage()", "");
 				}
 				codeInCatch = codeInCatch.replace('{', ' ');
 				codeInCatch = codeInCatch.replace('}', ' ');
@@ -142,18 +157,23 @@ public class ExceptionLogCtrl {
 				// variable ex is NOT actually used!
 
 				boolean exDotFound = false;
-				while (codeInCatch.contains(exceptionIdentifier + ".")) {
+				while (codeInCatch.contains(" " + exceptionIdentifier + ".")) {
 					exDotFound = true;
-					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.", exceptionIdentifier + " ");
+					codeInCatch = codeInCatch.replaceAll(" " + exceptionIdentifier + "\\.", " " + exceptionIdentifier + " ");
 				}
 				if (exDotFound) {
 					curExDot++;
 				}
 
+				codeInCatch = " " + codeInCatch + " ";
 				if (!codeInCatch.contains(" " + exceptionIdentifier + " ")) {
+					if (exPrintStackTraceFound) {
+						curExPrintStackTrace++;
+					}
 					if (exToStringFound) {
 						curExToString++;
-					} else {
+					}
+					if ((!exToStringFound) && (!exPrintStackTraceFound)) {
 						curExIdentMissing++;
 					}
 					curProblems++;
@@ -179,6 +199,7 @@ public class ExceptionLogCtrl {
 			totalProblems += curProblems;
 			totalExIdentMissing += curExIdentMissing;
 			totalExToString += curExToString;
+			totalExPrintStackTrace += curExPrintStackTrace;
 
 			// output what we found for this one file
 			System.out.println("");
@@ -186,8 +207,9 @@ public class ExceptionLogCtrl {
 			System.out.println(curCatchBlocks + " catch blocks");
 			System.out.println(curExDot + " times the exception identifier was used with a . behind it (not a problem!)");
 			System.out.println(curProblems + " problems in catch blocks");
-			System.out.println(curExIdentMissing + " times the exception identifier was unused");
-			System.out.println(curExToString + " times the exception identifier was unused except for .toString()");
+			System.out.println(curExIdentMissing + " times the exception identifier was completely unused");
+			System.out.println(curExToString + " times the exception identifier was unused except for .toString(), .getMessage() or .getLocalizedMessage()");
+			System.out.println(curExPrintStackTrace + " times the exception identifier was unused except for .printStackTrace()");
 		}
 
 		// output what we found in total
@@ -196,8 +218,9 @@ public class ExceptionLogCtrl {
 		System.out.println(totalCatchBlocks + " catch blocks");
 		System.out.println(totalExDot + " times the exception identifier was used with a . behind it (not a problem!)");
 		System.out.println(totalProblems + " problems in catch blocks");
-		System.out.println(totalExIdentMissing + " times the exception identifier was unused");
-		System.out.println(totalExToString + " times the exception identifier was unused except for .toString()");
+		System.out.println(totalExIdentMissing + " times the exception identifier was completely unused");
+		System.out.println(totalExToString + " times the exception identifier was unused except for .toString(), .getMessage() or .getLocalizedMessage()");
+		System.out.println(curExPrintStackTrace + " times the exception identifier was unused except for .printStackTrace()");
 
 		System.out.println("");
 		TextFile resultFile = new TextFile(RESULT_FILE);
