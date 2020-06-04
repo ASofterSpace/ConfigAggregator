@@ -121,9 +121,15 @@ public class ExceptionLogCtrl {
 
 				// check if the exceptionIdentifier is present in the code inside the catch at all -
 				// but .toString() does not count!
-				while (codeInCatch.contains(" ")) {
-					codeInCatch = codeInCatch.replaceAll(" ", "");
+				while (codeInCatch.contains(" .")) {
+					codeInCatch = codeInCatch.replaceAll(" \\.", ".");
 				}
+
+				// e.getCause() basically counts as e - that is, just the exception itself
+				while (codeInCatch.contains(exceptionIdentifier + ".getCause()")) {
+					codeInCatch = codeInCatch.replaceAll(exceptionIdentifier + "\\.getCause()", exceptionIdentifier);
+				}
+
 				boolean exToStringFound = false;
 				boolean exPrintStackTraceFound = false;
 				while (codeInCatch.contains(exceptionIdentifier + ".toString()")) {
@@ -153,8 +159,12 @@ public class ExceptionLogCtrl {
 				codeInCatch = codeInCatch.replace(';', ' ');
 				codeInCatch = codeInCatch.replace(',', ' ');
 				codeInCatch = codeInCatch.replace('@', ' ');
+				codeInCatch = codeInCatch.replace('=', ' ');
 				// we do not replace all dots, as bla(ex) means that ex is used, but bla.ex means that the
 				// variable ex is NOT actually used!
+
+				System.out.println("exceptionIdentifier: |" + exceptionIdentifier + "|");
+				System.out.println("codeInCatch: |" + codeInCatch + "|");
 
 				boolean exDotFound = false;
 				while (codeInCatch.contains(" " + exceptionIdentifier + ".")) {
