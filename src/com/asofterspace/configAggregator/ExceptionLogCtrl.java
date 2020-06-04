@@ -220,7 +220,7 @@ public class ExceptionLogCtrl {
 		System.out.println(totalProblems + " problems in catch blocks");
 		System.out.println(totalExIdentMissing + " times the exception identifier was completely unused");
 		System.out.println(totalExToString + " times the exception identifier was unused except for .toString(), .getMessage() or .getLocalizedMessage()");
-		System.out.println(curExPrintStackTrace + " times the exception identifier was unused except for .printStackTrace()");
+		System.out.println(totalExPrintStackTrace + " times the exception identifier was unused except for .printStackTrace()");
 
 		System.out.println("");
 		TextFile resultFile = new TextFile(RESULT_FILE);
