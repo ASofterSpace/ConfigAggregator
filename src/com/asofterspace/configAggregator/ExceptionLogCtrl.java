@@ -75,9 +75,13 @@ public class ExceptionLogCtrl {
 			content.replace('\r', ' ');
 			content.replace('\n', ' ');
 
+			System.out.println("DEBUG file: " + curFile.getAbsoluteFilename());
+
 			while (content.contains(" catch ") || content.contains(" catch(") ||
 				   content.contains("}catch ") || content.contains("}catch(")) {
 				curCatchBlocks++;
+			System.out.println("DEBUG catch block: " + curCatchBlocks);
+
 				int nextPos = Integer.MAX_VALUE;
 				if (content.indexOf(" catch ") > -1) {
 					nextPos = Math.min(nextPos, content.indexOf(" catch "));
